@@ -26,8 +26,8 @@ result = channel.queue_declare(exclusive=True)
 queue_name = result.method.queue
 
 channel.queue_bind(exchange='events', queue=queue_name, routing_key=('{}.#.touch.event'.format(icebergId)));
+channel.queue_bind(exchange='events', queue=queue_name, routing_key=('{}.proximity.event'.format(icebergId)));
 channel.queue_bind(exchange='events', queue=queue_name, routing_key='#.correspondence.event');
-
 
 def callback(channel, method, properties, body) :
 
@@ -41,6 +41,9 @@ def callback(channel, method, properties, body) :
         #print("facet:{0}:{1}".format(event['sensorNumber'], (1 if event['touched'] else 0)))
         arduino.write("facet:{0}:{1}".format(event['sensorNumber'], (1 if event['touched'] else 0)));
 
+    if event['type'] == 'PROXIMITY':
+        #print("facet:{0}:{1}".format(event['sensorNumber'], (1 if event['touched'] else 0)))
+        arduino.write("facet:{0}:{1}".format(6, (1 if event['personPresent'] else 0)));
 
 channel.basic_consume(callback, queue=queue_name, no_ack=True)
 channel.start_consuming()
